@@ -21,6 +21,8 @@ _h5 = "=="
 _bold = "** "
 _bullet = "* "
 
+_allowed_input_file_extension = [".txt", ".markdown"]
+
 def _convert_line(line):
     if line.startswith(_h1):
         return line.replace(_h1, "#", 1).replace(_h1, "")
@@ -38,7 +40,16 @@ def _convert_line(line):
         return line.replace(_bullet, "- ", 1) # Because I prefer "- " over "* " for unnumbered lists
     return line
 
+def _is_file_allowed(filename):
+    for each in _allowed_input_file_extension:
+        if filename.endswith(each):
+            return True
+    return False
+
 def _parse_file(filename, delete):
+    if not _is_file_allowed(filename):
+        return
+
     output_filename = filename.rsplit('.')[0] + '.markdown'
 
     reconversion = False
@@ -48,6 +59,8 @@ def _parse_file(filename, delete):
         os.rename(output_filename, filename)
     elif os.path.exists(output_filename):
         os.remove(output_filename) # Remove the output file if exists
+
+    print("Converting: " + filename)
 
     # Read lines from input file, convert and write to output file
     line_number = -1
