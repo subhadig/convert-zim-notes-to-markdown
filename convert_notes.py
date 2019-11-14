@@ -35,11 +35,11 @@ def _convert_line(line):
     elif line.startswith(_bold):
         return line.replace(_bold, "**", 1).replace(" **", "**", 1)
     elif line.startswith(_bullet):
-        return line.replace(_bullet, "- ", 1)
+        return line.replace(_bullet, "- ", 1) # Because I prefer "- " over "* " for unnumbered lists
     return line
 
-def _parse_file(filename):
-    output_filename = filename.split('.')[0] + '.markdown'
+def _parse_file(filename, delete):
+    output_filename = filename.rsplit('.')[0] + '.markdown'
 
     reconversion = False
     if filename == output_filename:
@@ -60,11 +60,25 @@ def _parse_file(filename):
                 line = _convert_line(line)
                 out_file.write(line)
 
+    if delete:
+        os.remove(filename)
+
+def _handle_dir(dirname, delete):
+    result = os.walk(dirname)
+    for root,_,files in result:
+        for each in files:
+            _parse_file(os.path.join(root,each), delete)
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('filepath', help='The path of the file')
+    parser.add_argument('--delete', help='Delete the old wiki files', action='store_true')
     args = parser.parse_args()
-    _parse_file(args.filepath)
+
+    if os.path.isdir(args.filepath):
+        _handle_dir(args.filepath, args.delete)
+    else:
+        _parse_file(args.filepath, args.delete)
 
 if __name__=='__main__':
     main()
