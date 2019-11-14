@@ -19,6 +19,7 @@ _h3 = "===="
 _h4 = "==="
 _h5 = "=="
 _bold = "** "
+_bullet = "* "
 
 def _convert_line(line):
     if line.startswith(_h1):
@@ -33,14 +34,20 @@ def _convert_line(line):
         return line.replace(_h5, "#####", 1).replace(_h5, "")
     elif line.startswith(_bold):
         return line.replace(_bold, "**", 1).replace(" **", "**", 1)
+    elif line.startswith(_bullet):
+        return line.replace(_bullet, "- ", 1)
     return line
 
 def _parse_file(filename):
     output_filename = filename.split('.')[0] + '.markdown'
 
-    # Remove the output file if exists
-    if os.path.exists(output_filename):
-        os.remove(output_filename)
+    reconversion = False
+    if filename == output_filename:
+        reconversion = True
+        filename = filename + ".old" # Rename input file if it is markdown if reconverting to markdown
+        os.rename(output_filename, filename)
+    elif os.path.exists(output_filename):
+        os.remove(output_filename) # Remove the output file if exists
 
     # Read lines from input file, convert and write to output file
     line_number = -1
@@ -48,7 +55,7 @@ def _parse_file(filename):
         with open(filename, 'r') as in_file:
             for line in in_file:
                 line_number += 1
-                if line_number < 4:
+                if not reconversion and line_number < 4:
                     continue
                 line = _convert_line(line)
                 out_file.write(line)
